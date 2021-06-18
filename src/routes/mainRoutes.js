@@ -15,13 +15,13 @@ export const mainRoutes = [
   },
   {
     path: "/movies/:movieId",
-    name: "MovieDetailsPage",
+    name: null,
     exact: false,
     component: lazy(() => import("../pages/movieDetailsPage/MovieDetailsPage")),
   },
   {
     path: "",
-    name: "NotFound",
+    name: null,
     exact: false,
     component: lazy(() => import("../pages/notFound/NotFound")),
   },

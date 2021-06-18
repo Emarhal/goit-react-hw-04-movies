@@ -6,7 +6,7 @@ import styles from "./MoviesPage.module.css";
 import searchApi from "../../services/api";
 
 class MoviesPage extends Component {
-  state = { data: [] };
+  state = { data: [], query: "" };
 
   componentDidMount() {
     const currentQuery = parseQueryString(this.props.location.search).query;
@@ -27,17 +27,13 @@ class MoviesPage extends Component {
   handleSearch = async () => {
     const { location } = this.props;
     const query = parseQueryString(location.search).query;
-    // return fetch(
-    //   `https://api.themoviedb.org/3/search/movie?api_key=6e40e6f870b3f7c3f9fcc54179d0bae2&query=${query}&language=en-US&page=1&include_adult=false`
-    // )
-    //   .then((res) => res.json())
     searchApi
       .getSearchInputApi(query)
-      .then((data) => this.setState({ data: data.results }));
+      .then((data) => this.setState({ data, query }));
   };
 
   handleChange = (evt) => {
-    this.setState({ term: evt.target.value });
+    this.setState({ query: evt.target.value });
   };
 
   handleSubmit = (term) => {
@@ -55,22 +51,29 @@ class MoviesPage extends Component {
     return (
       <>
         <Searchbar searchProducts={this.handleSubmit} />
-        <h2>MoviesPage</h2>;
         <ul className={styles.list}>
           {data.map((item) => (
-            <Link
-              to={{
-                pathname: `/movies/${item.id}`,
-              }}
-            >
-              <li key={item.id} className={styles.item}>
+            <li className={styles.item} key={item.id}>
+              <Link
+                to={{
+                  pathname: `/movies/${item.id}`,
+                  state: {
+                    from: this.props.location.pathname,
+                    query: this.state.query,
+                  },
+                }}
+              >
                 <img
                   className={styles.img}
-                  src={`https://image.tmdb.org/t/p/w300${item.poster_path}`}
+                  src={
+                    item.poster_path
+                      ? `https://image.tmdb.org/t/p/w300${item.poster_path}`
+                      : `https://cdn.pixabay.com/photo/2016/12/14/23/08/page-not-found-1907792_960_720.jpg`
+                  }
                   alt=""
                 />
-              </li>
-            </Link>
+              </Link>
+            </li>
           ))}
         </ul>
       </>

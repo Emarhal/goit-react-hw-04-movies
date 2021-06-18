@@ -1,8 +1,5 @@
 import React, { Component, Suspense } from "react";
-import axios from "axios";
 import { Route, NavLink, Switch } from "react-router-dom";
-import Cast from "../cast/Cast";
-import Reviews from "../reviews/Reviews";
 import { movieDetailsPageRoutes } from "../../routes/movieDetailsPageRoutes";
 import Loader from "../../Components/loader/Loader";
 import styles from "./MovieDetailsPage.module.css";
@@ -15,26 +12,26 @@ class MovieDetailsPage extends Component {
     overview: null,
     vote_average: null,
     genres: [],
+    from: "",
+    query: "",
   };
 
   async componentDidMount() {
-    // const KEY = "c07e91d5d5c572c0bf5dabe0ae7a4fc6";
-    // const BASE_URL = "https://api.themoviedb.org/3";
     const { movieId } = this.props.match.params;
-    // console.log(movieId);
-    // const response = await axios.get(
-    //   `${BASE_URL}/movie/${movieId}?api_key=${KEY}`
-    // );
-    // console.log(response.data);
     const response = await searchApi.getMovieDetailsApi(movieId);
     this.setState({
       ...response,
+      from: this.props.location.state.from,
+      query: this.props.location.state.query,
     });
   }
 
   handelClick = () => {
-    const { location, history } = this.props;
-    history.push(location?.state?.from || "/");
+    const { history } = this.props;
+    history.push({
+      pathname: this.state.from,
+      search: this.state.query ? `query=${this.state.query}` : null,
+    });
   };
 
   render() {
@@ -46,7 +43,11 @@ class MovieDetailsPage extends Component {
           Go back
         </button>
         <img
-          src={`https://image.tmdb.org/t/p/w500${poster_path}`}
+          src={
+            poster_path
+              ? `https://image.tmdb.org/t/p/w500${poster_path}`
+              : `https://cdn.pixabay.com/photo/2016/12/14/23/08/page-not-found-1907792_960_720.jpg`
+          }
           alt={title}
         />
         <h1>{title}</h1>
@@ -60,34 +61,31 @@ class MovieDetailsPage extends Component {
         </ul>
         <div>Additional information</div>
         <div className={styles.containerDivNav}>
-          {/* {movieDetailsPageRoutes.map((route) => {
-            <li key={route.path}>
-              <NavLink
-                exact={route.exact}
-                to={route.path}
-                // component={route.component}
-                className={styles.app}
-                activeClassName={styles.acvive}
-              >
-                {route.name}
-              </NavLink>
-            </li>;
-          })} */}
-          <NavLink to={`${match.url}/cast`}>Cast</NavLink>
-          <NavLink to={`${match.url}/reviews`}>Reviews</NavLink>
+          {movieDetailsPageRoutes.map((route) => {
+            return (
+              <li key={route.path}>
+                <NavLink
+                  exact={route.exact}
+                  to={`${match.url}${route.path}`}
+                  className={styles.app}
+                  activeClassName={styles.acvive}
+                >
+                  {route.name}
+                </NavLink>
+              </li>
+            );
+          })}
         </div>
         <Suspense fallback={<Loader />}>
           <Switch>
             {movieDetailsPageRoutes.map((route) => (
               <Route
                 exact={route.exact}
-                path={route.path}
+                path={`${this.props.match.path}${route.path}`}
                 component={route.component}
                 key={route.path}
               />
             ))}
-            {/* <Route path={`${match.path}/cast`} component={Cast} />
-          <Route path={`${match.path}/reviews`} component={Reviews} /> */}
           </Switch>
         </Suspense>
       </>
